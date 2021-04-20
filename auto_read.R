@@ -1,5 +1,5 @@
 # Leemos los datos 
-
+dd
 library(readxl)
 library(dplyr)
 ISS_SEMANAL <- read_excel("ccaa_semanal_14_7.xlsx",col_types = c("text", "text", "numeric","numeric","numeric"))
