@@ -1,25 +1,38 @@
-# Leemos los datos 
-dd
-library(readxl)
 library(dplyr)
-ISS_SEMANAL <- read_excel("ccaa_semanal_14_7.xlsx",col_types = c("text", "text", "numeric","numeric","numeric"))
-ISS_SEMANAL = as.data.frame(ISS_SEMANAL)
-ISS_SEMANAL$Semana=as.Date(ISS_SEMANAL$Semana, "%Y-%m-%d")
+library(ggplot2)
+library(lubridate)
+library(zoo)
 
-# Cálculo de Activos
-Spain = ISS_SEMANAL %>% 
-  group_by(CCAA) %>% 
-  arrange(Semana) %>% 
-  mutate(ActivosSemanales=Casos-Fallecidos-Recuperados,Activos=cumsum(ActivosSemanales))
+data_path <- 'https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_covid19_datos_sanidad_nueva_serie.csv'
 
-Spain=as.data.frame(Spain)
+spain <- read.csv(data_path)
 
-# Cálculo de Activos
-Spain2 = ISS_SEMANAL %>% 
-  group_by(CCAA) %>% 
-  arrange(Semana) %>%
-  filter(Semana>"2020-07-07")%>%
-  mutate(ActivosSemanales=Casos-Fallecidos-Recuperados,Activos=cumsum(ActivosSemanales))
+casos = spain %>% group_by(Fecha)%>%arrange(Fecha)%>%summarise(CasosTotales=sum(Casos))
+casos$Fecha=as.Date(casos$Fecha)
 
-Spain2=as.data.frame(Spain2)
+gg1=ggplot(data=casos,aes(x=Fecha,y=CasosTotales,group=1),lwd=1.5)+
+  geom_line(color="#00AFBB", size = 1.5)+
+  labs(x = "Date", 
+       y = "Cases", 
+       title = "Spain")+
+  scale_x_date(date_labels="%b/%Y", date_breaks="3 months", expand=c(0,0))+
+  theme_bw() 
+gg2=gg1+ geom_line(aes(y=rollmean(CasosTotales, 14, na.pad=TRUE)))
 
+
+
+fallecidos <- 'https://raw.githubusercontent.com/datadista/datasets/master/COVID%2019/ccaa_covid19_datos_sanidad_nueva_serie.csv'
+
+spain <- read.csv(data_path)
+
+casos = spain %>% group_by(Fecha)%>%arrange(Fecha)%>%summarise(CasosTotales=sum(Casos))
+casos$Fecha=as.Date(casos$Fecha)
+
+gg1=ggplot(data=casos,aes(x=Fecha,y=CasosTotales,group=1),lwd=1.5)+
+  geom_line(color="#00AFBB", size = 1.5)+
+  labs(x = "Date", 
+       y = "Cases", 
+       title = "Spain")+
+  scale_x_date(date_labels="%b/%Y", date_breaks="3 months", expand=c(0,0))+
+  theme_bw() 
+gg2=gg1+ geom_line(aes(y=rollmean(CasosTotales, 14, na.pad=TRUE)))
